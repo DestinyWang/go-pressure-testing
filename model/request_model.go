@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"github.com/DestinyWang/go-pressure-testing/util"
 	"github.com/antlabs/pcurl"
 	"github.com/sirupsen/logrus"
@@ -27,9 +28,16 @@ func (r *Request) GetBody() (body io.Reader) {
 	return strings.NewReader(r.Body)
 }
 
+const (
+	FormTypeHttp = "HTTP"
+	FormTypeThrift = "THRIFT"
+	FormTypeGRPC = "GRPC"
+)
+
 type VerifyHttp func(request *Request, response *http.Response) (code int, succ bool)
 type VerifyWebSocket func(request *Request, seq string, msg []byte) (code int, succ bool)
 
+// 将命令行参数转化成封装的 Request, 用于后续发压
 func NewRequest(url string, verify string, timeout time.Duration, debug bool, path string, reqHeaders []string, reqBody string) (request *Request, err error) {
 	var (
 		method  string
@@ -92,4 +100,20 @@ func appendHeaderMap(headers []string, headerMap map[string]string) {
 		}
 		headerMap[header[:index]] = header[index:]
 	}
+}
+
+func (r *Request) String() string {
+	return util.ToJsonString(r)
+}
+
+type RequestResult struct {
+	Id        string
+	ChanId    uint64
+	Time      time.Duration // 请求耗时
+	IsSucceed bool          // 是否成功
+	ErrCode   int           // 错误码
+}
+
+func (result *RequestResult) SetId(chanId uint64, n uint64) {
+	result.Id = fmt.Sprintf("%d_%d", chanId, n)
 }
