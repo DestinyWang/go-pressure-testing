@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"github.com/DestinyWang/go-pressure-testing/model"
+	"github.com/DestinyWang/go-pressure-testing/server/golink"
 	"sync"
 )
 
@@ -10,7 +11,7 @@ import (
 // <param totalNum>:
 func Dispose(ctx context.Context, concurrency, totalNum uint64, req *model.Request) {
 	// 设置数据缓存
-	//var ch = make(chan *model.RequestResult, 1000)
+	var ch = make(chan *model.RequestResult, 1000)
 	var (
 		wg   sync.WaitGroup // 发送数据完成
 		wgRe sync.WaitGroup // 数据处理完成
@@ -22,7 +23,7 @@ func Dispose(ctx context.Context, concurrency, totalNum uint64, req *model.Reque
 		switch req.Form {
 		case model.FormTypeHttp:
 		// http 请求
-		
+		golink.DoHttp(ctx, i, ch, totalNum, wg, req)
 		default:
 			// 类型不支持
 			wg.Done()
